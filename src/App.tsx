@@ -6,8 +6,8 @@ import { CustomerHome } from './components/customer/CustomerHome';
 import { CustomerOrdersView } from './components/customer/CustomerOrdersView';
 import { LoyaltyView } from './components/customer/LoyaltyView';
 import { CartDrawer } from './components/customer/CartDrawer';
-import { ProductDetailModal } from './components/customer/ProductDetailModal';
-import { StoreDetailModal } from './components/customer/StoreDetailModal';
+import { ProductDetailView } from './components/customer/ProductDetailView';
+import { StoreDetailView } from './components/customer/StoreDetailView';
 import { SettingsDrawer } from './components/common/SettingsDrawer';
 import { ShopDashboard } from './components/shop/ShopDashboard';
 import { ShopAccountingSuite } from './components/shop/ShopAccountingSuite';
@@ -34,7 +34,15 @@ function MainApp() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
+  const [originShop, setOriginShop] = useState<Shop | null>(null);
   const [lastPlacedOrderIds, setLastPlacedOrderIds] = useState<string[]>([]);
+
+  const handleSelectCustomerTab = (tab: 'home' | 'orders' | 'loyalty') => {
+    setSelectedProduct(null);
+    setSelectedShop(null);
+    setOriginShop(null);
+    setCustomerTab(tab);
+  };
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col font-sans selection:bg-orange-500 selection:text-white">
@@ -45,7 +53,7 @@ function MainApp() {
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         customerTab={customerTab}
-        onSelectCustomerTab={setCustomerTab}
+        onSelectCustomerTab={handleSelectCustomerTab}
         shopTab={shopTab}
         onSelectShopTab={setShopTab}
         distributorTab={distributorTab}
@@ -57,16 +65,59 @@ function MainApp() {
         {/* ================= CUSTOMER PORTAL ================= */}
         {currentRole === 'customer' && (
           <>
-            {customerTab === 'home' && (
-              <CustomerHome
-                onSelectProduct={setSelectedProduct}
-                onSelectShop={setSelectedShop}
-                searchQuery={searchQuery}
+            {selectedProduct ? (
+              <ProductDetailView
+                product={selectedProduct}
+                originShop={originShop}
+                onBack={() => {
+                  if (originShop) {
+                    setSelectedShop(originShop);
+                    setSelectedProduct(null);
+                    setOriginShop(null);
+                  } else {
+                    setSelectedProduct(null);
+                  }
+                }}
+                onOpenCart={() => setIsCartOpen(true)}
+                onSelectProduct={(prod) => {
+                  setSelectedProduct(prod);
+                }}
+                onOpenStore={(shop) => {
+                  setSelectedProduct(null);
+                  setOriginShop(null);
+                  setSelectedShop(shop);
+                }}
+              />
+            ) : selectedShop ? (
+              <StoreDetailView
+                shop={selectedShop}
+                onBack={() => setSelectedShop(null)}
+                onSelectProduct={(prod) => {
+                  setOriginShop(selectedShop);
+                  setSelectedShop(null);
+                  setSelectedProduct(prod);
+                }}
                 onOpenCart={() => setIsCartOpen(true)}
               />
+            ) : (
+              <>
+                {customerTab === 'home' && (
+                  <CustomerHome
+                    onSelectProduct={(prod) => {
+                      setOriginShop(null);
+                      setSelectedProduct(prod);
+                    }}
+                    onSelectShop={(shop) => {
+                      setSelectedShop(shop);
+                    }}
+                    searchQuery={searchQuery}
+                    onOpenCart={() => setIsCartOpen(true)}
+                  />
+                )}
+                {customerTab === 'orders' && <CustomerOrdersView />}
+                {customerTab === 'loyalty' && <LoyaltyView />}
+              </>
             )}
-            {customerTab === 'orders' && <CustomerOrdersView />}
-            {customerTab === 'loyalty' && <LoyaltyView />}
           </>
         )}
 
@@ -99,6 +150,8 @@ function MainApp() {
         onClose={() => setIsCartOpen(false)}
         onOrderSuccess={(orderIds) => {
           setLastPlacedOrderIds(orderIds);
+          setSelectedProduct(null);
+          setSelectedShop(null);
           setCustomerTab('orders');
         }}
       />
@@ -107,33 +160,15 @@ function MainApp() {
       <SettingsDrawer
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
-        onNavigateToOrders={() => setCustomerTab('orders')}
-        onNavigateToLoyalty={() => setCustomerTab('loyalty')}
-      />
-
-      {/* Product Detail Modal with Specs, Seller Card, and Alternate Store Comparison */}
-      <ProductDetailModal
-        product={selectedProduct}
-        onClose={() => setSelectedProduct(null)}
-        onOpenCart={() => setIsCartOpen(true)}
-        onSelectProduct={(prod) => setSelectedProduct(prod)}
-        onOpenStore={(shop) => {
+        onNavigateToOrders={() => {
           setSelectedProduct(null);
-          setSelectedShop(shop);
-        }}
-      />
-
-      {/* Store Profile Modal with Store Identity & Full Product Catalog */}
-      <StoreDetailModal
-        shop={selectedShop}
-        onClose={() => setSelectedShop(null)}
-        onSelectProduct={(prod) => {
           setSelectedShop(null);
-          setSelectedProduct(prod);
+          setCustomerTab('orders');
         }}
-        onOpenCart={() => {
+        onNavigateToLoyalty={() => {
+          setSelectedProduct(null);
           setSelectedShop(null);
-          setIsCartOpen(true);
+          setCustomerTab('loyalty');
         }}
       />
 
