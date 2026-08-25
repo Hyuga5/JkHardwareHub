@@ -1,0 +1,6 @@
+{
+  "name": "JKHardwareHub — Nepali Hardware Marketplace & BusyWin Accounting",
+  "description": "Cross-platform hardware marketplace, BusyWin-style accounting suite with 13% VAT and IRD summaries, B2B wholesale supply portal, eSewa/Khalti checkout, and loyalty rewards.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
