@@ -3,6 +3,7 @@ import { Shop, Product, HardwareCategory } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { formatNPR } from '../../utils/formatters';
 import { translations, categoryLabels } from '../../utils/translations';
+import { StoreFileUploadDesk } from './StoreFileUploadDesk';
 import {
   ArrowLeft,
   Store,
@@ -32,6 +33,7 @@ import {
   PhoneCall,
   Calendar,
   Eye,
+  Upload,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -54,7 +56,7 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({
   const [sortBy, setSortBy] = useState<'featured' | 'price_asc' | 'price_desc' | 'rating'>('featured');
   const [addedAnimationId, setAddedAnimationId] = useState<string | null>(null);
   const [copiedPhone, setCopiedPhone] = useState(false);
-  const [activeTab, setActiveTab] = useState<'products' | 'about' | 'documents' | 'delivery'>('products');
+  const [activeTab, setActiveTab] = useState<'products' | 'about' | 'documents' | 'upload_boq'>('products');
 
   // All products belonging to this specific store (retail only)
   const storeProducts = useMemo(() => {
@@ -305,6 +307,22 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({
             >
               <FileText className="w-4 h-4" />
               <span>IRD Tax Compliance</span>
+            </button>
+
+            <button
+              id="store-tab-upload-boq"
+              onClick={() => setActiveTab('upload_boq')}
+              className={`px-4 py-2 rounded-xl text-xs font-black transition cursor-pointer flex items-center gap-1.5 ${
+                activeTab === 'upload_boq'
+                  ? 'bg-orange-500 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+              }`}
+            >
+              <Upload className="w-4 h-4 text-orange-500" />
+              <span>Upload BOQ & Estimates</span>
+              <span className="text-[10px] px-1.5 py-0.5 bg-orange-100 text-orange-800 rounded font-bold">
+                Promo Code
+              </span>
             </button>
           </div>
 
@@ -673,7 +691,40 @@ export const StoreDetailView: React.FC<StoreDetailViewProps> = ({
             </div>
           </div>
         )}
+
+        {/* Tab 4: Upload BOQ & Blueprints */}
+        {activeTab === 'upload_boq' && (
+          <div className="p-6 sm:p-8">
+            <StoreFileUploadDesk shop={shop} />
+          </div>
+        )}
       </div>
+
+      {/* ================= 4. END OF STORE PROFILE: DEDICATED FILE UPLOAD & ESTIMATION DESK ================= */}
+      {activeTab !== 'upload_boq' && (
+        <div className="mt-8 pt-4">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                <Upload className="w-5 h-5 text-orange-500" />
+                <span>Store Quotation & File Upload Desk</span>
+              </h3>
+              <p className="text-xs text-slate-500">
+                Need bulk construction materials? Upload your BOQ / Drawings for {shop.name} with promo codes.
+              </p>
+            </div>
+            <button
+              onClick={() => setActiveTab('upload_boq')}
+              className="px-3.5 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-700 font-black rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer border border-orange-200"
+            >
+              <span>Expand Full Desk</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <StoreFileUploadDesk shop={shop} />
+        </div>
+      )}
     </div>
   );
 };
